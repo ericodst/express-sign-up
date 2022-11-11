@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- <title>final</title> -->
+	<title>reigister</title>
+	<link rel="stylesheet" type="text/css" href="../../main.css">
+</head>
+<body>
+	<form action="/register" method="post" id="regForm">
+		<h2>Register!</h2>
+		<p>
+			<label>name</label>
+			<input type="text" name="name" value="" size="20" maxlength="20"
+				required data-value-missing="this field is required!" pattern=([^\x00-\x40\x5B-\x60\x7B-\x7F]){2,20} data-pattern-mismatch="Translate('Invalid character')">
+		</p>
+		<p>
+			<label>account</label>
+			<input type="text" name="account" value="" size="20" maxlength="10"
+				required data-value-missing="this field is required!" pattern=\w{4,10} data-pattern-mismatch="Translate('Invalid character')">
+		</p>
+		<p>
+			<label>email</label>
+			<input type="email" name="email" value="" size="20" maxlength="50"
+				required data-value-missing="this field is required!">
+		</p>
+		<p>
+			<label>password</label>
+			<input type="password" name="password" value="" size="20" maxlength="10" 
+				required data-value-missing="this field is required!" pattern=\w{4,10} data-pattern-mismatch="Translate('Invalid character')">
+		</p>
+		<p>
+			<label>re-password</label>
+			<input type="password" name="repassword" value="" size="20" maxlength="10" 
+				required data-value-missing="this field is required!" pattern=\w{4,10} data-pattern-mismatch="Translate('Invalid character')">
+		</p>
+		<!-- <a href="/register" role="button">register</a> -->
+		<input type="submit" name="register" value="register">
+		<p>account and password restriction: </p>
+		<p>length: 4 ~ 10</p>
+		<p>character: a ~ z, A ~ Z, 0 ~ 9</p>
+	</form>
+	<!-- <script type="text/javascript" src="formCheck.js"></script> -->
+</body>
+</html>
