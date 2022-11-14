@@ -62,17 +62,45 @@ server.listen(3000, '127.0.0.1', function(){
 
 // start page---------------------------------------------------------------------
 router.get('/', function(req, res){
-	// res.render('index');
+	var count = 0;
+	var qs = "select count(*) from event";
+	var uName;
 	if(req.session.loggedin == true) {
-		res.redirect('/lists/admin');
+		uName = req.session.userName;
 	} else {
-		// req.session.loggedin = false;
-		// req.session.isGuest = true;
-		// res.render('/list', {root: '.'});
-		// res.sendFile('list.ejs', { root: 'views' });
-		// res.redirect('/lists');
-		res.sendFile('index.html', { root: '.' });
+		uName = "Guest"
 	}
+	// connection.query(qs, function(err, rows, fields){
+	connection.all(qs, function(err, rows, fields){
+		if(err)
+			throw err;
+		else if(rows[0]['count(*)'] == 0){
+			// content = '目前無活動';
+			res.render('list', {num: count, text: rows, logged: req.session.loggedin, n: uName});
+		} else if(rows[0]['count(*)'] > 0) {
+			count = rows[0]['count(*)'];
+			// console.log(count + "  999");
+			
+			var ans = "select event.name, event.date, event.limits, event.admin, event.eid, people.number from event, people where event.eid=people.active";
+			connection.all(ans, function(err, row, fields){
+				if(err) 
+					console.log(err)
+				else
+					res.render('list', {num: count, text: row, logged: req.session.loggedin, n: uName});
+			})
+		}
+	})
+	// res.render('index');
+	// if(req.session.loggedin == true) {
+	// 	res.redirect('/lists/admin');
+	// } else {
+	// 	// req.session.loggedin = false;
+	// 	// req.session.isGuest = true;
+	// 	res.render('/list', {root: '.'});
+	// 	// res.sendFile('list.ejs', { root: 'views' });
+	// 	// res.redirect('/lists');
+	// 	// res.sendFile('index.html', { root: '.' });
+	// }
 	// res.sendFile('index.html', { root: '.' });
 	// res.redirect('/guest');
 	// var content = fs.readFileSync('index.html');
@@ -135,6 +163,10 @@ router.post('/register', function(req, res){
 })
 
 // 登入-------------------------------------------------------------------------
+router.get('/login', function(req, res) {
+	res.sendFile('login.html', { root: '.' });
+})
+
 router.post('/login', function(req, res){
 	var userAcont = req.body.account;
 	var userPwd = req.body.password;
@@ -146,7 +178,7 @@ router.post('/login', function(req, res){
 		if(err)
 			throw err;
 		else if(rows[0]['count(*)'] == 1){
-			var valid = "select password from user where user.account='" + userAcont + "'";
+			var valid = "select password, uid from user where user.account='" + userAcont + "'";
 			connection.all(valid, function(err, row, fields){
 			// var check = "select count(*), user.name from user where user.account='" + userAcont + "' and user.password='" + userPwd + "'";
 			// connection.query(check, function(err, rows, feilds){
@@ -165,14 +197,15 @@ router.post('/login', function(req, res){
 						req.session.del = false;
 						req.session.userName = rows[0]['name'];
 						req.session.account = userAcont;
+						req.session.uid = row[0]['uid']
 						// console.log(rows[0]['name']);
 						// console.log(currentUser);
 						// setInterval(function(){}, 2000);
-						res.redirect('/lists');
+						res.redirect('/');
 						// res.sendfile('system.html');
 					} else {
 						dialog.info('accountt or password is incorrect!');
-						res.redirect('/');
+						res.redirect('/login');
 					}
 				}
 			})
@@ -188,57 +221,65 @@ router.get('/guest', function(req, res){
 	// currentUser = "";
 	// currentAccount = "";
 	// setInterval(function(){}, 2000);
-	res.redirect('/lists');
+	res.redirect('/');
 })
 
 // list page----------------------------------------------------------------
-router.get('/lists', function(req, res){
-	// console.log(req.session);
-	if(req.session.loggedin == false && req.session.isGuest == false) {
-		res.redirect('/');
-	}	else if(req.session.loggedin == true || req.session.isGuest == true) {
-		// begin at 活動列表
-		var count = 0;
-		var qs = "select count(*) from event";
-		// connection.query(qs, function(err, rows, fields){
-		connection.all(qs, function(err, rows, fields){
-			if(err)
-				throw err;
-			else if(rows[0]['count(*)'] == 0){
-				// content = '目前無活動';
-				res.render('list', {num: count, text: rows});
-			} else if(rows[0]['count(*)'] > 0) {
-				count = rows[0]['count(*)'];
-				// console.log(count + "  999");
-				
-				var ans = "select event.name, event.date, event.limits, event.admin, event.eid, people.number from event, people where event.eid=people.active";
-				connection.all(ans, function(err, row, fields){
-					if(err) 
-						console.log(err)
-					else
-						res.render('list', {num: count, text: row, logged: req.session.loggedin});
-				})
-			}
-		})
-	} 
-	else {
-		dialog.info('Please login');
-		res.redirect('/');
-	}
-})
+// router.get('/', function(req, res){
+// 	// console.log(req.session);
+// 	// if(req.session.loggedin == false && req.session.isGuest == false) {
+// 	// 	res.redirect('/');
+// 	// }	else 
+// 	// if(req.session.loggedin == true || req.session.isGuest == true) {
+// 		// begin at 活動列表
+// 	var count = 0;
+// 	var qs = "select count(*) from event";
+// 	var uName;
+// 	if(req.session.loggedin == true) {
+// 		uName = req.session.userName;
+// 	} else {
+// 		uName = "Guest"
+// 	}
+// 	// connection.query(qs, function(err, rows, fields){
+// 	connection.all(qs, function(err, rows, fields){
+// 		if(err)
+// 			throw err;
+// 		else if(rows[0]['count(*)'] == 0){
+// 			// content = '目前無活動';
+// 			res.render('list', {num: count, text: rows, logged: req.session.loggedin, n: uName});
+// 		} else if(rows[0]['count(*)'] > 0) {
+// 			count = rows[0]['count(*)'];
+// 			// console.log(count + "  999");
+			
+// 			var ans = "select event.name, event.date, event.limits, event.admin, event.eid, people.number from event, people where event.eid=people.active";
+// 			connection.all(ans, function(err, row, fields){
+// 				if(err) 
+// 					console.log(err)
+// 				else
+// 					res.render('list', {num: count, text: row, logged: req.session.loggedin, n: uName});
+// 			})
+// 		}
+// 	})
+// 	// } 
+// 	// else {
+// 	// 	dialog.info('Please login');
+// 	// 	res.redirect('/');
+// 	// }
+// })
 
 // 個人資料修改------------------------------------------------------------------
 router.get('/personal', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
-		dialog.info('Please login');
-		res.redirect('/');
-	} else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your profile');
-		res.redirect('/lists');
-	}	else if(req.session.loggedin == true){
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login');
+	// 	res.redirect('/');
+	// } else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your profile');
+	// 	res.redirect('/lists');
+	// }	else 
+	if(req.session.loggedin == true){
 		var getData = "select password, email from user where user.account='" + req.session.account + "'";
 		connection.all(getData, function(err, row, fields){
-			res.render('personal', {chpwd: req.session.chpwd, name: req.session.userName, account: req.session.account, pass: row[0]['password'], email: row[0]['email']});
+			res.render('personal', {chpwd: req.session.chpwd, name: req.session.userName, account: req.session.account, pass: row[0]['password'], email: row[0]['email'], logged: req.session.loggedin});
 			// req.session.chpwd = false;
 		})
 	} else {
@@ -248,13 +289,14 @@ router.get('/personal', function(req, res){
 })
 
 router.get('/personal/change', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
-		dialog.info('Please login');
-		res.redirect('/');
-	} else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your profile');
-		res.redirect('/lists');
-	}	else if(req.session.loggedin == true) {
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login');
+	// 	res.redirect('/');
+	// } else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your profile');
+	// 	res.redirect('/lists');
+	// }	else 
+	if(req.session.loggedin == true) {
 		req.session.chpwd = !req.session.chpwd;
 		res.redirect('/personal');
 	} else {
@@ -264,13 +306,14 @@ router.get('/personal/change', function(req, res){
 })
 
 router.put('/personal', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
-		dialog.info('Please login');
-		res.redirect('/');
-	} else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your profile');
-		res.redirect('/lists');
-	}	else if(req.session.loggedin == true) {
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login');
+	// 	res.redirect('/');
+	// } else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your profile');
+	// 	res.redirect('/lists');
+	// }	else 
+	if(req.session.loggedin == true) {
 		// var newName = req.body.name;
 		req.session.userName = req.body.name;
 		var newEmail = req.body.email;
@@ -288,7 +331,7 @@ router.put('/personal', function(req, res){
 						// req.session.account = newName;
 						// req.session.userName = newName;
 						dialog.info('Succeed!');
-						res.redirect('/lists/admin');
+						res.redirect('/admin');
 					}
 				})
 			}
@@ -300,13 +343,14 @@ router.put('/personal', function(req, res){
 })
 
 router.put('/personal/change', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
-		dialog.info('Please login');
-		res.redirect('/');
-	} else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your profile');
-		res.redirect('/lists');
-	}	else if(req.session.loggedin == true){
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login');
+	// 	res.redirect('/');
+	// } else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your profile');
+	// 	res.redirect('/lists');
+	// }	else 
+	if(req.session.loggedin == true){
 		var oldPass = req.body.oldPass;
 		var newPass = req.body.newPass;
 		var newPassAgain = req.body.newPassAgain;
@@ -346,38 +390,43 @@ router.put('/personal/change', function(req, res){
 })
 
 // 報名--------------------------------------------------------------------------
-router.post('/lists/:eid/signup', function(req, res){
-	// console.log("ok");
-	connection.get('insert into matchs(account, active) values(?,?)', [req.session.account, eid], function(err, result){
-		if(err)
-			throw err;
-		else {
-			var getNum = "select number from people where people.active='" + eid + "'";
-			var oriNum = 0;
-			connection.all(getNum, function(err, rows, fields){
-				if(err)
-					throw err;
-				else {
-					oriNum = rows[0]['number'];
-					var newNum = parseInt(oriNum);
-					newNum = newNum+1;
-					var update = "update people set number='" + newNum + "' where active='" + eid + "'";
-					connection.get(update, function(err, row, field){
-						if(err)
-							throw err;
-						else {
-							// signupevent = '';
-							dialog.info('sign up succeed');
-							res.redirect('/lists');
-						}
-					})
-				}
-			})
-		}
-	});
+router.post('/activity/:eid/signup', function(req, res){
+	if(req.session.loggedin == true) {
+		// console.log("ok");
+		connection.get('insert into matchs(account, active) values(?,?)', [req.session.account, eid], function(err, result){
+			if(err)
+				throw err;
+			else {
+				var getNum = "select number from people where people.active='" + eid + "'";
+				var oriNum = 0;
+				connection.all(getNum, function(err, rows, fields){
+					if(err)
+						throw err;
+					else {
+						oriNum = rows[0]['number'];
+						var newNum = parseInt(oriNum);
+						newNum = newNum+1;
+						var update = "update people set number='" + newNum + "' where active='" + eid + "'";
+						connection.get(update, function(err, row, field){
+							if(err)
+								throw err;
+							else {
+								// signupevent = '';
+								dialog.info('sign up succeed');
+								res.redirect('/');
+							}
+						})
+					}
+				})
+			}
+		});
+	} else {
+		dialog.info('Please login');
+		res.redirect('/');
+	}
 })
 
-router.get('/lists/:wanted/signup', function(req, res){
+router.get('/activity/:wanted/signup', function(req, res){
 	// if(req.params.wanted == 'ok') {
 		// connection.get('insert into matchs(account, active) values(?,?)', [currentAccount, signupevent], function(err, result){
 		// 	if(err)
@@ -407,10 +456,11 @@ router.get('/lists/:wanted/signup', function(req, res){
 		// 	}
 		// });
 	// }else {
-	if(req.session.loggedin == false) {
-		dialog.info('Please login to sign up');
-		// res.redirect('/system');
-	} else {
+	// if(req.session.loggedin == false) {
+	// 	dialog.info('Please login to sign up');
+	// 	// res.redirect('/system');
+	// } 
+	if(req.session.loggedin == true) {
 		let target = req.params.wanted;
 		eid = target;
 		var filled = "select number, limits from people, event where active='" + eid + "' and eid='" + eid + "'";
@@ -420,13 +470,13 @@ router.get('/lists/:wanted/signup', function(req, res){
 			else {
 				if(rows[0]['number'] == rows[0]['limits']){
 					dialog.info('人數已達上限');
-					res.redirect('/lists');
+					res.redirect('/');
 				} else {
 					var already = "select count(*) from matchs where matchs.account='" + req.session.account + "' and matchs.active='" + eid + "'";
 					connection.all(already, function(err, result, fields){
 						if(result[0]['count(*)'] == 1) {
 							dialog.info('已經報名過了!');
-							res.redirect('/lists');
+							res.redirect('/');
 						} else {
 							var qr = "select name, date from event where event.eid='" + eid + "'";
 							var resultDate = '';
@@ -435,7 +485,7 @@ router.get('/lists/:wanted/signup', function(req, res){
 									throw err;
 								else{
 									resultDate = row[0]['date'];
-									res.render('signup', {eid: eid, event: row[0]['name'],date: resultDate, name: req.session.userName});
+									res.render('signup', {eid: eid, event: row[0]['name'],date: resultDate, name: req.session.userName, logged: req.session.loggedin});
 								}
 							})
 						}
@@ -443,19 +493,24 @@ router.get('/lists/:wanted/signup', function(req, res){
 				}
 			}
 		})
+	} else {
+		dialog.info('Please login');
+		res.redirect('/');
 	}
 	// }
 })
 
 // 管理活動	-------------------------------------------------------------------------
-router.get('/lists/admin', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
-		dialog.info('Please login!');
-		res.redirect('/');
-	}	else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your activities!');
-		res.redirect('/lists');
-	}	else if(req.session.loggedin == true) {
+router.get('/admin', function(req, res){
+// router.get('/:eid/admin', function(req, res){
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login!');
+	// 	res.redirect('/');
+	// }	else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your activities!');
+	// 	res.redirect('/lists');
+	// }	else 
+	if(req.session.loggedin == true) {
 		// res.sendfile('system.html');
 		var content = '';
 		// res.render('system', { content: content });
@@ -466,7 +521,7 @@ router.get('/lists/admin', function(req, res){
 				throw err;
 			else if(rows[0]['count(*)'] == 0){
 				// content = '目前無管理活動';
-				res.render('admin', {num: count, text: rows});
+				res.render('admin', {num: count, text: rows, logged: req.session.loggedin, userName: req.session.userName});
 			} else if(rows[0]['count(*)'] > 0) {
 				count = rows[0]['count(*)'];
 				// console.log(count + "  999");
@@ -475,7 +530,7 @@ router.get('/lists/admin', function(req, res){
 				connection.all(ans, function(err, row, fields){
 					// console.log(row[0]['name'] + " " + row[0]['date'] + " " + row[0]['limits'])
 					// res.sendfile('admin.html');  //
-					res.render('admin', {num: count, text: row});
+					res.render('admin', {num: count, text: row, logged: req.session.loggedin, userName: req.session.userName});
 				})
 			}
 		})
@@ -485,14 +540,15 @@ router.get('/lists/admin', function(req, res){
 	}
 })
 
-router.post('/lists/new', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
-		dialog.info('Please login!');
-		res.redirect('/');
-	}	else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your activities!');
-		res.redirect('/lists');
-	} else if(req.session.loggedin == true) {
+router.post('/new', function(req, res){
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login!');
+	// 	res.redirect('/');
+	// }	else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your activities!');
+	// 	res.redirect('/lists');
+	// } else 
+	if(req.session.loggedin == true) {
 		var eventName = req.body.name;
 		var eventDate = req.body.date;
 		var eventLimit = req.body.limit;
@@ -507,7 +563,7 @@ router.post('/lists/new', function(req, res){
 					throw err;
 				else{
 					dialog.info('Create succeed! \n\nredirect to admin page');
-					res.redirect('/lists/admin');
+					res.redirect('/admin');
 				}
 			})
 			var updateeid = "update ids set num=? where types = 'event'";
@@ -528,132 +584,148 @@ router.post('/lists/new', function(req, res){
 })
 
 // 編輯完活動後修改資料庫---------------------------------------------------------------------------
-router.put('/lists/:eid/edit', function(req, res){
-	// console.log("asdadasd");
-	var modDate = req.body.date;
-	var modLimit = req.body.limit;
-	var modDes = req.body.describe;
+router.put('/activity/:eid/edit', function(req, res){
+	if(req.session.loggedin == true) {
+		// console.log("asdadasd");
+		var modDate = req.body.date;
+		var modLimit = req.body.limit;
+		var modDes = req.body.describe;
 
-	var mod = "update event set date=?, limits=?, description=? where event.eid ='" + req.params.eid + "'";
-	connection.get(mod, [modDate, modLimit, modDes], function(err, row, fields){
-		if(err)
-			throw err;
-		else {
-			dialog.info('modify succeed!');
-			// send email
-			var getNum = "select count(*) from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
-			var Num;
-			connection.get(getNum, function(err, row){
-				Num = row['count(*)'];
-			})
-			var getEmail = "select user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
-			connection.all(getEmail, function(err, rows, fields){
-				console.log(rows);
-				// console.log(rows['email']);
-				var emails = [];
-				for(let i = 0; i < Num; i++) {
-					console.log(rows[i]['email'] + "  hhh");
-					emails.push(rows[i]['email']);
-					// emails = rows[i]['email'];
-					var options = {
-						from: 'h6871828@gmail.com',
-						to: rows[i]['email'],
-						subject: 'event modified',
-						text: 'the activity you signed up has been modified, please go to our website to see details'
-					};
-					transport.sendMail(options, function(error, info){
-						if(err)
-							console.log(error);
-						else
-							console.log('OKOk');
-					})
-				}
-				// console.log(emails);
-				// var options = {
-				// 	from: 'h6871828@gmail.com',
-				// 	to: emails,
-				// 	subject: 'event modified',
-				// 	text: 'the activity you signed up has been modified, please go to our website to see details'
-				// };
-				// transport.sendMail(options, function(error, info){
-				// 	if(err)
-				// 		console.log(error);
-				// 	else
-				// 		console.log('OKOk');
-				// })
-				res.redirect('/lists/admin');
-			})
-		}
-	})
+		var mod = "update event set date=?, limits=?, description=? where event.eid ='" + req.params.eid + "'";
+		connection.get(mod, [modDate, modLimit, modDes], function(err, row, fields){
+			if(err)
+				throw err;
+			else {
+				dialog.info('modify succeed!');
+				// send email
+				var getNum = "select count(*) from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
+				var Num;
+				connection.get(getNum, function(err, row){
+					Num = row['count(*)'];
+				})
+				var getEmail = "select user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
+				connection.all(getEmail, function(err, rows, fields){
+					console.log(rows);
+					// console.log(rows['email']);
+					var emails = [];
+					for(let i = 0; i < Num; i++) {
+						console.log(rows[i]['email'] + "  hhh");
+						emails.push(rows[i]['email']);
+						// emails = rows[i]['email'];
+						var options = {
+							from: 'h6871828@gmail.com',
+							to: rows[i]['email'],
+							subject: 'event modified',
+							text: 'the activity you signed up has been modified, please go to our website to see details'
+						};
+						transport.sendMail(options, function(error, info){
+							if(err)
+								console.log(error);
+							else
+								console.log('OKOk');
+						})
+					}
+					// console.log(emails);
+					// var options = {
+					// 	from: 'h6871828@gmail.com',
+					// 	to: emails,
+					// 	subject: 'event modified',
+					// 	text: 'the activity you signed up has been modified, please go to our website to see details'
+					// };
+					// transport.sendMail(options, function(error, info){
+					// 	if(err)
+					// 		console.log(error);
+					// 	else
+					// 		console.log('OKOk');
+					// })
+					res.redirect('/admin');
+				})
+			}
+		})
+	} else {
+		dialog.info('Please login!');
+		res.redirect('/');
+	}
 })
 
 // 活動管理->編輯------------------------------------------------------------------------
 // router.get('/system/edit/:event', function(req, res){
-router.get('/lists/:eid/edit', function(req, res){
-	// console.log(req.params.event);
-	var target = "select name, date, limits, description from event where event.eid='" + req.params.eid + "'";
-	connection.all(target, function(err, row, fields){
-		if(err)
-			throw err;
-		else {
-			var signlist = "select count(*), user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
-			connection.all(signlist, function(err, rows, fields){
-				console.log(rows);
-				// var count = rows.size;
-				var count = rows[0]['count(*)'];
-				res.render('edit', {del: req.session.del, eid: req.params.eid,n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows});
-				del = false;
-			})
-			// res.render('modify', {del: del, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description']});
-			// del = false;
-		}
-	})
+router.get('/activity/:eid/edit', function(req, res){
+	if(req.session.loggedin == true) {
+		// console.log(req.params.event);
+		var target = "select name, date, limits, description from event where event.eid='" + req.params.eid + "'";
+		connection.all(target, function(err, row, fields){
+			if(err)
+				throw err;
+			else {
+				var signlist = "select count(*), user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
+				connection.all(signlist, function(err, rows, fields){
+					console.log(rows);
+					// var count = rows.size;
+					var count = rows[0]['count(*)'];
+					res.render('edit', {del: req.session.del, eid: req.params.eid, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows, logged: req.session.loggedin, userName: req.session.userName});
+					del = false;
+				})
+				// res.render('modify', {del: del, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description']});
+				// del = false;
+			}
+		})
+	} else {
+		dialog.info('Please login!');
+		res.redirect('/');
+	}
 })
 
 // delete---------------------------------------------------------------------------
-router.get('/lists/:eid/edit/check', function(req, res){
-	req.session.del = true;
-	var target = "select name, date, limits, description from event where event.eid='" + req.params.eid + "'";
-	connection.all(target, function(err, row, fields){
-		if(err)
-			throw err;
-		else {
-			var getNum = "select count(*) from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
-			connection.get(getNum, function(err, result) {
-				var nums = result['count(*)'];
-				var signlist = "select user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
-				connection.all(signlist, function(err, rows, fields){
-					console.log(rows);
-					// var count = rows.length;
-					var count = nums;
-					// console.log(del);
-					res.render('delete', {del: req.session.del, eid: req.params.eid, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows});
-					req.session.del = false;
+router.get('/activity/:eid/edit/check', function(req, res){
+	if(req.session.loggedin == true) {
+		req.session.del = true;
+		var target = "select name, date, limits, description from event where event.eid='" + req.params.eid + "'";
+		connection.all(target, function(err, row, fields){
+			if(err)
+				throw err;
+			else {
+				var getNum = "select count(*) from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
+				connection.get(getNum, function(err, result) {
+					var nums = result['count(*)'];
+					var signlist = "select user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
+					connection.all(signlist, function(err, rows, fields){
+						console.log(rows);
+						// var count = rows.length;
+						var count = nums;
+						// console.log(del);
+						res.render('delete', {del: req.session.del, eid: req.params.eid, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows, logged: req.session.loggedin});
+						req.session.del = false;
+					})
 				})
-			})
-			// var signlist = "select count(*), user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
-			// connection.all(signlist, function(err, rows, fields){
-			// 	console.log(rows);
-			// 	// var count = rows.length;
-			// 	var count = rows[0]['count(*)'];
-			// 	// console.log(del);
-			// 	res.render('delete', {del: req.session.del, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows});
-			// 	req.session.del = false;
-			// })
-			// res.render('modify', {del: del, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description']});
-			// del = false;
-		}
-	})
-})
-
-router.delete('/lists/:event/edit', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
+				// var signlist = "select count(*), user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
+				// connection.all(signlist, function(err, rows, fields){
+				// 	console.log(rows);
+				// 	// var count = rows.length;
+				// 	var count = rows[0]['count(*)'];
+				// 	// console.log(del);
+				// 	res.render('delete', {del: req.session.del, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows});
+				// 	req.session.del = false;
+				// })
+				// res.render('modify', {del: del, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description']});
+				// del = false;
+			}
+		})
+	} else {
 		dialog.info('Please login!');
 		res.redirect('/');
-	}	else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your activities!');
-		res.redirect('/lists');
-	} else if(req.session.loggedin == true) {
+	}
+})
+
+router.delete('/activity/:event/edit', function(req, res){
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login!');
+	// 	res.redirect('/');
+	// }	else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your activities!');
+	// 	res.redirect('/lists');
+	// } else 
+	if(req.session.loggedin == true) {
 		var pwd = req.body.pass;
 		var check = "select password from user where user.account='" + req.session.account + "'";
 		connection.get(check, function(err, row, fields){
@@ -707,12 +779,12 @@ router.delete('/lists/:event/edit', function(req, res){
 															throw err;
 														else {
 															dialog.info('deleted');
-															res.redirect('/lists/admin');
+															res.redirect('/admin');
 														}
 													})
 												} else {
 													dialog.info('deleted');
-													res.redirect('/lists/admin');
+													res.redirect('/admin');
 												}
 											})
 										}
@@ -724,19 +796,23 @@ router.delete('/lists/:event/edit', function(req, res){
 				})
 			} else if(pwd != row[0]['password']) {  // password not correct
 				dialog.info('password is not correct');
-				var destination = '/lists/' + req.params.event + '/edit/check';
+				var destination = '/activity/' + req.params.event + '/edit/check';
 				res.redirect(destination);
 			}
 		})
+	} else {
+		dialog.info('Please login!');
+		res.redirect('/');
 	}
 })
 
 // 我的活動-------------------------------------------------------------------------- 
-router.get('/lists/mine', function(req, res){
-	if(req.session.loggedin == false) {
-		dialog.info('Please login to check your activities!');
-		res.redirect('/lists');
-	}else {
+router.get('/mine', function(req, res){
+	// if(req.session.loggedin == false) {
+	// 	dialog.info('Please login to check your activities!');
+	// 	res.redirect('/lists');
+	// }
+	if(req.session.loggedin == true) {
 		// res.sendfile('system.html');
 		var content = '';
 		var count = 0;
@@ -746,30 +822,39 @@ router.get('/lists/mine', function(req, res){
 				throw err;
 			else if(rows[0]['count(*)'] == 0){
 				// content = '目前無活動';
-				res.render('mine', {num: count, text: rows});
+				res.render('mine', {num: count, text: rows, logged: req.session.loggedin, userName: req.session.userName});
 			} else if(rows[0]['count(*)'] > 0) {
 				count = rows[0]['count(*)'];
 				// console.log(count + "  999");
 				var ans = "select event.name, date, limits, admin, eid, people.number from event, matchs, people where matchs.account='" + req.session.account + "' and matchs.active=event.eid and event.eid=people.active";
 				connection.all(ans, function(err, row, fields){
 					// console.log(row[0]['name'] + " " + row[0]['date'] + " " + row[0]['limits'])
-					res.render('mine', {num: count, text: row});
+					res.render('mine', {num: count, text: row, logged: req.session.loggedin, userName: req.session.userName});
 				})
 			}
 		})
+	} else {
+		dialog.info('Please login!');
+		res.redirect('/');
 	}
 })
 
 // 發起活動-------------------------------------------------------------------------
-router.get('/lists/new', function(req, res){
-	if(req.session.loggedin == false && req.session.isGuest == false) {
+router.get('/new', function(req, res){
+	// if(req.session.loggedin == false && req.session.isGuest == false) {
+	// 	dialog.info('Please login!');
+	// 	res.redirect('/');
+	// }	else if(req.session.isGuest == true) {
+	// 	dialog.info('Please login to see your activities!');
+	// 	res.redirect('/lists');
+	// } else {
+	// 	res.sendFile('create.html', { root: '.' });
+	// }
+	if(req.session.loggedin) {
+		res.render('create', {logged: req.session.loggedin, userName: req.session.userName});
+	} else {
 		dialog.info('Please login!');
 		res.redirect('/');
-	}	else if(req.session.isGuest == true) {
-		dialog.info('Please login to see your activities!');
-		res.redirect('/lists');
-	} else {
-		res.sendFile('create.html', { root: '.' });
 	}
 	// if(currentUser == '') {
 	// 	dialog.info('Please login to create new activity!');
@@ -778,9 +863,10 @@ router.get('/lists/new', function(req, res){
 })
 
 // 活動頁面-------------------------------------------------------------------------
-router.get('/lists/:eid', function(req, res){
+router.get('/activity/:eid', function(req, res){
 	var eid = req.params.eid;
 	var qy = "select name, date, description from event where event.eid='" + eid + "'";
+	
 	connection.all(qy, function(err, rows, fields){
 		var can = true; // 可否報名
 
@@ -797,9 +883,17 @@ router.get('/lists/:eid', function(req, res){
 					if(err)
 						throw err;
 					else{
-					if(result[0]['count(*)'] == 1)
+						if(result[0]['count(*)'] == 1) {
 							can = false;
-						res.render('detail', {eid: eid, n: rows[0]['name'], d: rows[0]['date'], des: rows[0]['description'], can: can});
+						} 
+						// let userName = "Guest";
+						if(req.session.loggedin == true) {
+							// userName = req.session.userName;
+							res.render('detail', {eid: eid, n: rows[0]['name'], d: rows[0]['date'], des: rows[0]['description'], can: can, logged: req.session.loggedin, userName: req.session.userName});
+						} else {
+							res.render('detail', {eid: eid, n: rows[0]['name'], d: rows[0]['date'], des: rows[0]['description'], can: can, logged: req.session.loggedin, userName: "Guest"});
+						}
+						// res.render('detail', {eid: eid, n: rows[0]['name'], d: rows[0]['date'], des: rows[0]['description'], can: can, logged: req.session.loggedin, userName: req.session.userName});
 					}
 				})
 			}
@@ -808,16 +902,16 @@ router.get('/lists/:eid', function(req, res){
 })
 
 // 退出活動--------------------------------------------------------------------------
-router.get('/lists/:eid/giveup', function(req, res){
+router.get('/activity/:eid/giveup', function(req, res){
 	var eid = req.params.eid;
 	var qy = "select name, date, description from event where event.eid='" + eid + "'";
 	connection.all(qy, function(err, rows, fields){
-		res.render('giveup', {eid: eid, n: rows[0]['name'], d: rows[0]['date'], des: rows[0]['description']});
+		res.render('giveup', {eid: eid, n: rows[0]['name'], d: rows[0]['date'], des: rows[0]['description'], logged: req.session.loggedin, userName: req.session.userName});
 	})
 })
 
 // 退出後刪除報名資料--------------------------------------------------------------------
-router.get('/lists/:eid/quit', function(req, res){
+router.get('/activity/:eid/quit', function(req, res){
 	var eid = req.params.eid;
 	var getNum = "select number from people where people.active='" + eid + "'";
 	var oriNum = 0;
@@ -839,7 +933,7 @@ router.get('/lists/:eid/quit', function(req, res){
 							throw err;
 						else {
 							dialog.info('succeed!');
-							res.redirect('/lists/mine');
+							res.redirect('/mine');
 						}
 					})
 				}

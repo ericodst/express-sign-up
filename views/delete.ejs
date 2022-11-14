@@ -10,17 +10,21 @@
 	<!-- <h3><a href="/personal">個人資料</a></h3> -->
 	<nav>
 		<ul>
-			<li style="font-size: 0.99em"><a href="/lists">活動列表</a></li>
-			<li style="font-weight: bold; font-style: italic; font-size: 1.05em;"><a href="/lists/admin">活動管理</a></li>
-			<li style="font-size: 0.99em"><a href="/lists/mine">我的活動</a></li>
-			<li style="font-size: 0.99em"><a href="/lists/new">發起活動</a></li>
+			<li style="font-size: 0.99em"><a href="/">活動列表</a></li>
+			<li style="font-weight: bold; font-style: italic; font-size: 1.05em;"><a href="/admin">活動管理</a></li>
+			<li style="font-size: 0.99em"><a href="/mine">我的活動</a></li>
+			<li style="font-size: 0.99em"><a href="/new">發起活動</a></li>
 			<li style="font-size: 0.99em"><a href="/personal">個人資料</a></li>
-			<li style="font-size: 0.99em"><a href="/logout">登出</a></li>
+			<% if(logged) {%>
+				<li style="font-size: 0.99em"><a href="/logout">登出</a></li>
+			<% } else {%>
+				<li style="font-size: 0.99em"><a href="/login">登入</a></li>
+			<% } %>
 		</ul>
 	</nav>
 	<hr>
 	<div id="container">
-		<form action="/lists/<%= eid %>/edit?_method=put" method="post" id="createForm">
+		<form action="/activity/<%= eid %>/edit?_method=put" method="post" id="createForm">
 			<!-- <p>
 				<label>name: <%= n %></label>
 				<input type="text" name="name" value="<%= n %>" size="20" maxlength="20"
@@ -47,14 +51,14 @@
 			</p> -->
 			<span class="btns">
 				<button>
-					<a href="/lists/admin" role="button" class="btns">
+					<a href="/admin" role="button" class="btns">
 						<!-- <button> -->
 							cancel
 						<!-- </button> -->
 					</a>
 				</button>
 				<button>
-					<a href="/lists/<%= eid %>/edit/check" role="button" class="btns">取消此活動</a>
+					<a href="/activity/<%= eid %>/edit/check" role="button" class="btns">取消此活動</a>
 				</button>
 				<input type="submit" name="save" value="save">
 			</span>
@@ -63,13 +67,15 @@
 			<input type="submit" name="delete" value="取消此活動">
 		</form> -->
 		<% if(del) { %>
-			<form action="/lists/<%= n %>/edit?_method=delete" method="post">
-				<p>
-					<label>password: </label>
+			<form action="/activity/<%= n %>/edit?_method=delete" method="post">
+				<div class="form-group row">
+					<label>password </label>
 					<input type="password" name="pass" value="" size="20" maxlength="10"
 							required data-value-missing="this field is required!" pattern=\w{4,10} data-pattern-mismatch="Translate('Invalid character')">
-				</p>
-				<input type="submit" value="確定" name="del">
+				</div>
+				<div>
+					<input type="submit" value="確定" name="del">
+				</div>
 			</form>
 		<% } %>
 			<p>
