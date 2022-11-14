@@ -10,12 +10,12 @@
 	<!-- <h3><a href="/personal">個人資料</a></h3> -->
 	<nav>
 		<ul>
-			<li><a href="/lists">活動列表</a></li>
-			<li><a href="/lists/admin">活動管理</a></li>
-			<li><a href="/lists/mine">我的活動</a></li>
-			<li><a href="/lists/new">發起活動</a></li>
-			<li><a href="/personal">個人資料</a></li>
-			<li><a href="/logout">登出</a></li>
+			<li style="font-size: 0.99em"><a href="/lists">活動列表</a></li>
+			<li style="font-size: 0.99em"><a href="/lists/admin">活動管理</a></li>
+			<li style="font-weight: bold; font-style: italic; font-size: 1.05em;"><a href="/lists/mine">我的活動</a></li>
+			<li style="font-size: 0.99em"><a href="/lists/new">發起活動</a></li>
+			<li style="font-size: 0.99em"><a href="/personal">個人資料</a></li>
+			<li style="font-size: 0.99em"><a href="/logout">登出</a></li>
 		</ul>
 	</nav>
 	<hr>
@@ -30,7 +30,7 @@
 				</tr>
 				<% for(let i = 0; i < num; i++) { %>
 					<tr>
-						<td><a href="/lists/<%= text[i]['eid'] %>/detail"><%= text[i]['name'] %></a></td><td><%= text[i]['date'] %></td><td><%= text[i]['limits'] %></td><td><%= text[i]['number'] %></td><td><%= text[i]['admin'] %></td>
+						<td><a href="/lists/<%= text[i]['eid'] %>"><%= text[i]['name'] %></a></td><td><%= text[i]['date'] %></td><td><%= text[i]['limits'] %></td><td><%= text[i]['number'] %></td><td><%= text[i]['admin'] %></td>
 						<td><a href="/lists/<%= text[i]['eid'] %>/giveup">取消報名</a></td>
 					</tr>
 				<% } %>

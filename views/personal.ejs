@@ -10,12 +10,12 @@
 	<!-- <h3><a href="/personal">個人資料</a></h3> -->
 	<nav>
 		<ul>
-			<li><a href="/lists">活動列表</a></li>
-			<li><a href="/lists/admin">活動管理</a></li>
-			<li><a href="/lists/mine">我的活動</a></li>
-			<li><a href="/lists/new">發起活動</a></li>
-			<li><a href="/personal">個人資料</a></li>
-			<li><a href="/logout">登出</a></li>
+			<li style="font-size: 0.99em"><a href="/lists">活動列表</a></li>
+			<li style="font-size: 0.99em"><a href="/lists/admin">活動管理</a></li>
+			<li style="font-size: 0.99em"><a href="/lists/mine">我的活動</a></li>
+			<li style="font-size: 0.99em"><a href="/lists/new">發起活動</a></li>
+			<li style="font-weight: bold; font-style: italic; font-size: 1.05em;"><a href="/personal">個人資料</a></li>
+			<li style="font-size: 0.99em"><a href="/logout">登出</a></li>
 		</ul>
 	</nav>
 	<hr>
@@ -41,33 +41,40 @@
 					<input type="email" name="email" value="<%= email %>" size="40" maxlength="40" 
 						required data-value-missing="this field is required!">
 				</div>
-				<button>
-					<a href="/lists/admin">cancel</a>
-				</button>
-				<button>
-					<a href="/personal/change">變更密碼</a>
-				</button>
-				<input type="submit" name="save" value="save">
+				<div style="text-align: center;">
+					<button>
+						<a href="/lists/admin" role="button" class="btns">cancel</a>
+					</button>
+					<button>
+						<a href="/personal/change" role="button" class="btns">變更密碼</a>
+					</button>
+					<input type="submit" name="save" value="save">
+				</div>
+				
 			</form>
 		<% } else if(chpwd) { %>
 			<form action="/personal/change?_method=put" method="post" id="changePass">
-				<p>
+				<div class="form-group row">
 					<label>Old password: </label>
 					<input type="password" name="oldPass" value="" size="20" maxlength="10"
 						required data-value-missing="this field is required!" pattern=\w{4,10} data-pattern-mismatch="Translate('Invalid character')">
-				</p>
-				<p>
+				</div>
+				<div class="form-group row">
 					<label>New password: </label>
 					<input type="password" name="newPass" value="" size="20" maxlength="10"
 						required data-value-missing="this field is required!" pattern=\w{4,10} data-pattern-mismatch="Translate('Invalid character')">
-				</p>
-				<p>
+				</div>
+				<div class="form-group row">
 					<label>New password again: </label>
 					<input type="password" name="newPassAgain" value="" size="20" maxlength="10"
 						required data-value-missing="this field is required!" pattern=\w{4,10} data-pattern-mismatch="Translate('Invalid character')">
-				</p>
-				<a href="/personal">cancel</a>
-				<input type="submit" name="changePass" value="確定">
+				</div>
+				<div style="text-align: center;">
+					<button>
+						<a href="/personal/change" role="button" class="btns">cancel</a>
+					</button>
+					<input type="submit" name="changePass" value="確定">
+				</div>
 			</form>
 		<% } %>
 	</div>

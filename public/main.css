@@ -48,10 +48,17 @@ table, th, td {
 form {
 	margin-bottom: 30px;
 }
+button {
+	margin: 1em;
+}
 
 .des {
 	width: 300px;
 	height: 400px;
+}
+
+.btns {
+	color: rgb(51,51,51);
 }
 
 /* .button-edit {
@@ -67,6 +74,13 @@ form {
 	padding-left: 20px;
 	width: 550px;
 	text-align: left;
+}
+
+#container-main {
+	margin: auto;
+	padding-left: 20px;
+	width: 550px;
+	text-align: center;
 }
 
 #container label {
