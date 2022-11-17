@@ -4,3 +4,6 @@ Final Project.pptx
 .env
 package-lock.json
 signUp
+fly.toml
+signUp.sqbpro
+data.sql
