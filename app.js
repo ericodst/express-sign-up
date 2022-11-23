@@ -446,17 +446,21 @@ router.put('/activity/:eid/edit', function(req, res){
 // 活動管理->編輯------------------------------------------------------------------------
 router.get('/activity/:eid/edit', function(req, res){
 	if(req.session.loggedin == true) {
-		let target = "select name, date, limits, description from event where event.eid='" + req.params.eid + "'";
+		let target = "select name, date, admin, limits, description from event where event.eid='" + req.params.eid + "'";
 		connection.all(target, function(err, row, fields){
 			if(err)
 				throw err;
 			else {
-				let signlist = "select count(*), user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
-				connection.all(signlist, function(err, rows, fields){
-					let count = rows[0]['count(*)'];
-					res.render('edit', {del: req.session.del, eid: req.params.eid, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows, logged: req.session.loggedin, userName: req.session.userName, message: req.flash('message')});
-					del = false;
-				})
+				if(row[0]['admin'] != req.session.userName){
+					res.redirect('/');
+				} else {
+					let signlist = "select count(*), user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
+					connection.all(signlist, function(err, rows, fields){
+						let count = rows[0]['count(*)'];
+						res.render('edit', {del: req.session.del, eid: req.params.eid, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows, logged: req.session.loggedin, userName: req.session.userName, message: req.flash('message')});
+						del = false;
+					})
+				}
 			}
 		})
 	} else {
