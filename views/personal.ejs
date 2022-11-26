@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>main page</title>
+	<title>報名系統</title>
 	<link rel="stylesheet" type="text/css" href="../main.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
@@ -12,7 +12,6 @@
 		</div>
 	<% } %>
 	<h1>Hi! <%= name %></h1>
-	<!-- <h3><a href="/personal">個人資料</a></h3> -->
 	<nav>
 		<ul>
 			<li style="font-size: 0.99em"><a href="/">活動列表</a></li>
@@ -41,11 +40,7 @@
 					<label>Account: </label>
 					<input type="text" value="<%= account %>" disabled>
 				</div>
-				<!-- <p>
-					<label>password: </label>
-					<input type="text" name="date" value="<%=  %>" size="20" maxlength="8"
-						required data-value-missing="this field is required!" pattern=([0-9]){8} data-pattern-mismatch="Translate('Invalid character')">
-				</p> -->
+
 				<div class="form-group row">
 					<label>Email: </label>
 					<input type="email" name="email" value="<%= email %>" size="40" maxlength="40" 

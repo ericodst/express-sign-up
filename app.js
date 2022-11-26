@@ -338,6 +338,9 @@ router.get('/activity/:wanted/signup', function(req, res){
 // 管理活動	-------------------------------------------------------------------------
 router.get('/admin', function(req, res){
 	if(req.session.loggedin == true) {
+		if(req.session.del == true) {
+			req.session.del = false;
+		}
 		let count = 0;
 		let qs = "select count(*) from event where event.admin='" + req.session.userName + "'";
 		connection.all(qs, function(err, rows, fields){
@@ -483,13 +486,15 @@ router.get('/activity/:eid/edit/check', function(req, res){
 				if(err)
 					throw err;
 				else {
-					let getNum = "select count(*) from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
+					let getNum = "select count(*) from matchs where matchs.active='" + req.params.eid + "'";
 					connection.get(getNum, function(err, result) {
+						console.log(result);
 						let nums = result['count(*)'];
-						let signlist = "select user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = '" + req.session.account + "'";
+						let signlist = "select user.name, user.email from user, matchs where matchs.active='" + req.params.eid + "' and matchs.account = user.account";
 						connection.all(signlist, function(err, rows, fields){
+							console.log(rows);
 							let count = nums;
-							res.render('delete', {del: req.session.del, eid: req.params.eid, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows, logged: req.session.loggedin, message: req.flash('message')});
+							res.render('delete', {del: req.session.del, eid: req.params.eid, n: row[0]['name'], d: row[0]['date'], l: row[0]['limits'], des: row[0]['description'], num: count, man: rows, logged: req.session.loggedin, message: req.flash('message'), userName: req.session.userName});
 							req.session.del = false;
 						})
 					})

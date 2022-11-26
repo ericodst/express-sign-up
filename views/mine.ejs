@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>main page</title>
+	<title>報名系統</title>
 	<link rel="stylesheet" type="text/css" href="../main.css">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 </head>
 <body>
 	<h1>Hi! <%= userName %></h1>
-	<!-- <h3><a href="/personal">個人資料</a></h3> -->
 	<nav>
 		<ul>
 			<li style="font-size: 0.99em"><a href="/">活動列表</a></li>
@@ -29,15 +28,19 @@
 		<% } %>
 		<% if(num > 0) { %>
 			<table class="table table-hover">
-				<tr>
-					<td>活動名稱</td><td>日期</td><td>人數上限</td><td>報名人數</td><td>主辦人</td><td> </td>
-				</tr>
-				<% for(let i = 0; i < num; i++) { %>
+				<thead>
 					<tr>
-						<td><a href="/activity/<%= text[i]['eid'] %>"><%= text[i]['name'] %></a></td><td><%= text[i]['date'] %></td><td><%= text[i]['limits'] %></td><td><%= text[i]['number'] %></td><td><%= text[i]['admin'] %></td>
-						<td><a href="/activity/<%= text[i]['eid'] %>/giveup">取消報名</a></td>
+						<th scope="col">活動名稱</th><th scope="col">日期</th><th scope="col">人數上限</th><th scope="col">報名人數</th><th scope="col">主辦人</th><th scope="col"> </th>
 					</tr>
-				<% } %>
+				</thead>
+				<tbody>
+					<% for(let i = 0; i < num; i++) { %>
+						<tr>
+							<td><a href="/activity/<%= text[i]['eid'] %>"><%= text[i]['name'] %></a></td><td><%= text[i]['date'] %></td><td><%= text[i]['limits'] %></td><td><%= text[i]['number'] %></td><td><%= text[i]['admin'] %></td>
+							<td><a href="/activity/<%= text[i]['eid'] %>/giveup">取消報名</a></td>
+						</tr>
+					<% } %>
+				</tbody>
 			</table>
 		<% } %>
 	</div>
